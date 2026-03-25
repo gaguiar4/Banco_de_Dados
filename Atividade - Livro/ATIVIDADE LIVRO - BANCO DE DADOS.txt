@@ -1,0 +1,121 @@
+/* Lógico_Emprestimo_Livros: */
+
+-- CRIAÇÃO TABELAS
+CREATE TABLE Autor (
+    id_autor serial PRIMARY KEY,
+    nome_autor varchar(50) not null
+);
+
+CREATE TABLE Livro (
+    id_livro serial PRIMARY KEY,
+    titulo varchar(30) not null,
+    fk_autor_id inteiro,
+	foreign key (fk_autor_id) references Autor (id_autor)
+    on delete cascade on update no action
+);
+
+
+CREATE TABLE Usuario (
+    id_usuario serial PRIMARY KEY,
+    nome_usuario varchar(50) not null,
+    email varchar(30) unique 
+);
+
+CREATE TABLE Livro_Usuario_Emprestimo (
+    id serial PRIMARY KEY,
+    data_emprestimo date,
+    data_devolucao date,
+    valor numeric,
+    fk_livro_id inteiro,
+    fk_usuario_id inteiro,
+    foreign key (fk_livro_id) references Livro (id_livro)
+    on delete cascade on update no action,
+    foreign key (fk_usuario_id) references Usuario (id_usuario)
+    on delete cascade on update no action
+);
+
+/*INSERÇÃO VALORES*/
+
+INSERT INTO Autor (nome_autor)
+VALUES 
+('Machado de Assis'),
+('Clarice Lispector'),
+('Jorge Amado');
+
+INSERT INTO Livro (titulo, fk_autor_id)
+VALUES 
+('Dom Casmurro', 1),
+('A Hora da Estrela', 2),
+('Capitães da Areia', 3);
+
+INSERT INTO Livro (titulo, fk_autor_id)
+VALUES 
+('Pequeno Principe', 1),
+('Mobydique', 2);
+
+INSERT INTO Usuario (nome_usuario, email)
+VALUES 
+('João Silva', 'joao@email.com'),
+('Maria Souza', 'maria@email.com');
+
+INSERT INTO Livro_Usuario_Emprestimo 
+(data_emprestimo, data_devolucao, valor, fk_livro_id, fk_usuario_id)
+VALUES 
+('2026-03-01', '2026-03-10', 15.50, 1, 1),
+('2026-03-05', '2026-03-12', 10.00, 2, 2);
+
+INSERT INTO Livro_Usuario_Emprestimo 
+(data_emprestimo, data_devolucao, valor, fk_livro_id, fk_usuario_id)
+VALUES 
+('2026-03-11', '2026-03-12', 15.50, 1, 1),
+('2026-03-13', '2026-03-14', 15.50, 1, 1);
+
+INSERT INTO Livro_Usuario_Emprestimo 
+(data_emprestimo, valor, fk_livro_id, fk_usuario_id)
+VALUES 
+('2026-03-24',18.00, 3, 1);
+
+/*QUESTÃO 01*/
+select e.data_emprestimo, l.titulo, u.nome_usuario from Livro_Usuario_Emprestimo e
+inner join usuario u 
+on u.id_usuario = e.fk_usuario_id
+inner join livro l
+on e.fk_livro_id = l.id_livro
+where data_devolucao isnull;
+
+/*QUESTÃO 02*/
+select l.titulo, a.nome_autor  from livro l 
+left join Livro_Usuario_Emprestimo e 
+on l.id_livro = e.fk_livro_id
+inner join autor a
+on l.fk_autor_id  = a.id_autor 	
+where e.id isnull;
+
+/*QUESTÃO 03*/
+select count(l.id_livro) as Livros_emprestados from Livro_Usuario_Emprestimo e
+inner join usuario u 
+on u.id_usuario = e.fk_usuario_id
+inner join livro l
+on e.fk_livro_id = l.id_livro
+
+/*QUESTÃO 04*/
+select count(l.fk_autor_id) as quantidade_livros, a.nome_autor  from livro l
+inner join autor a
+on l.fk_autor_id = a.id_autor
+group by a.id_autor 
+
+/*QUESTÃO 05*/
+select l.titulo, e.valor from livro l
+inner join Livro_Usuario_Emprestimo e
+on l.id_livro = e.fk_livro_id
+order by(valor) desc
+
+/*QUESTÃO 06*/
+delete from autor where id_autor = 3;
+
+
+/*QUESTÃO 07*/
+select sum(e.valor) as total, l.titulo from Livro_Usuario_Emprestimo e
+inner join livro l
+on e.fk_livro_id = l.id_livro 
+group by l.id_livro 
