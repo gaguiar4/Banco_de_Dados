@@ -37,6 +37,12 @@ create type status_fatura as enum(
 'em analise'
 );
 
+create type forma_pagamento as enum(  
+'dinheiro',
+'cartao',
+'pix'
+);
+
 create type cobertura_plano as enum(
 'regional',
 'nacional'
@@ -235,6 +241,113 @@ create table prescricao(
 	on update no action
 	on delete cascade
 );
+
+create table medicamento( 
+	id_medicamento serial primary key, 
+	nome varchar(50),
+	laboratorio varchar(50)
+);
+
+create table prescricao_medicamento( 
+	id_prescricao_medicamento serial primary key,
+	dosagem numeric,
+	quantidade int,
+	fk_id_prescricao int,
+	fk_id_medicamento int,
+	foreign key(fk_id_prescricao) references prescricao(id_prescricao)
+	on delete cascade
+	on update no action,
+	foreign key(fk_id_medicamento) references medicamento(id_medicamento)
+	on delete cascade
+	on update no action
+);
+
+create table exame( 
+	id_exame serial primary key,
+	tipo tipo_exame,
+	data_solicitacao date,
+	descricao_detalhada text,
+	fk_id_atendimento int,
+	foreign key(fk_id_atendimento) references atendimento(id_atendimento)
+	on delete cascade
+	on update no action
+	);
+
+create table laudo( 
+	id_laudo serial primary key,
+	resultado resultado_exame, 
+	data_resultado date, 
+	fk_id_exame int,
+	foreign key(fk_id_exame) references exame(id_exame)
+	on delete cascade
+	on update no action 
+);
+ 
+create table laboratorio(
+	id_laboratorio serial primary key, 
+	tipo tipo_laboratorio
+);
+
+create table exame_laboratorio( 
+	id_exame_laboratorio serial primary key,
+	custo numeric,
+	fk_id_laboratorio int,
+	fk_id_exame int,
+	foreign key(fk_id_laboratorio) references laboratorio(id_laboratorio)
+	on delete cascade
+	on update no action,
+	foreign key(fk_id_exame) references exame(id_exame)
+	on delete cascade 
+	on update no action	
+);
+
+create table fatura(  
+	id_fatura serial primary key, 
+	valor_fatura numeric, 
+	status status_fatura,
+	forma_pagamento forma_pagamento,
+	data_emissao date,
+	data_vencimento date,
+	fk_id_plano int,
+	fk_id_atendimento int,
+	foreign key (fk_id_plano) references plano_de_saude(id_plano_de_saude)
+	on delete cascade
+	on update no action,
+	foreign key (fk_id_atendimento) references atendimento(id_atendimento)
+	on delete cascade
+	on update no action
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
