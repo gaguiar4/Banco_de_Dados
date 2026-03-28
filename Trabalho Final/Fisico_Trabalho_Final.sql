@@ -87,7 +87,7 @@ cre char(9),
 turno turno_enfermeira,
 id_enfermeira_chefe int,
 foreign key(id_enfermeira_chefe) references enfermeira(id_enfermeira)
-on delete set null on update no action 
+	on update no action on delete set null  
 );
 
 create table ala (
@@ -97,9 +97,9 @@ leitos_disponiveis int,
 fk_id_hospital int,
 fk_id_enfermeira int,
 foreign key(fk_id_hospital) references hospital(id_hospital)
-on delete cascade on update no action, 
+	on update no action on delete cascade, 
 foreign key(fk_id_enfermeira) references enfermeira(id_enfermeira)
-on delete set null on update no action
+	on update no action on delete set null
 );
 
 create table leito (
@@ -123,9 +123,9 @@ data date not null,
 fk_id_hospital int,
 fk_id_plano_de_saude int,
 foreign key(fk_id_hospital) references hospital(id_hospital)
-on delete cascade on update no action,
+	on update no action on delete cascade,
 foreign key(fk_id_plano_de_saude) references plano_de_saude(id_plano_de_saude)
-on delete cascade on update no action
+	 on update no action on delete cascade
 );
 
 create table endereco(
@@ -148,9 +148,9 @@ create table paciente(
 	fk_id_plano int,
 	numero_casa int,
 	foreign key(fk_endereco) references endereco(id_endereco)
-	on delete cascade on update no action,
+		on update no action on delete cascade,
 	foreign key(fk_id_plano) references plano_de_saude(id_plano_de_saude)
-	on delete cascade on update no action
+		on update no action on delete cascade
 );
 
 create table internacao(
@@ -161,12 +161,17 @@ create table internacao(
 		fk_id_paciente int,
 		fk_id_leito int,
 		foreign key(fk_id_paciente) references paciente(id_paciente)
-		on delete set null
-		on update no action,
+			on update no action
+			on delete set null,
 		foreign key(fk_id_leito) references leito(id_leito)
-		on delete set null
-		on update no action
+			on update no action
+			on delete set null
 );
+
+--Index unico parcial guarda o id leito temporariamente enquanto ele estiver ocupado
+create unique index idx_leito_unico_ocupado
+on internacao (fk_id_leito)
+where (status = true);
 
 create table medico(
 	id_medico serial primary key,
@@ -177,15 +182,6 @@ create table medico(
 	telefone_celular char(11)
 );
 
-create table pesquisa_satisfacao(
-	id_pesquisa serial primary key,
-	data_resposta date,
-	nota_geral int check(nota_geral between 1 and 5),
-	comentario text,
-	recomendaria boolean,
-	tempo_espera_avaliacao int check(tempo_espera_avaliacao between 1 and 5)
-);
-
 create table atendimento(
 	id_atendimento serial primary key,
 	data_atendimento timestamp,
@@ -194,16 +190,25 @@ create table atendimento(
 	status status_atendimento,
 	fk_id_medico int,
 	fk_id_paciente int,
-	fk_id_pesquisa int,
 	foreign key(fk_id_medico) references medico(id_medico)
-	on delete cascade
-	on update no action,
+		on update no action
+		on delete cascade,
 	foreign key(fk_id_paciente) references paciente(id_paciente)
-	on delete cascade
-	on update no action,
-	foreign key (fk_id_pesquisa) references pesquisa_satisfacao(id_pesquisa)
-	on delete cascade
-	on update no action
+		on update no action
+		on delete cascade
+);
+
+create table pesquisa_satisfacao(
+	id_pesquisa serial primary key,
+	fk_id_atendimento int,
+	data_resposta date,
+	nota_geral int check(nota_geral between 1 and 5),
+	comentario text,
+	recomendaria boolean,
+	tempo_espera_avaliacao int check(tempo_espera_avaliacao between 1 and 5),
+	foreign key(fk_id_atendimento) references atendimento(id_atendimento)
+		on update no action
+		on delete cascade
 );
 
 create table prescricao(
@@ -211,8 +216,8 @@ create table prescricao(
 	data_prescricao date,
 	fk_id_atendimento int,
 	foreign key(fk_id_atendimento) references atendimento(id_atendimento)
-	on update no action
-	on delete cascade
+		on update no action
+		on delete cascade
 );
 
 create table medicamento( 
@@ -228,11 +233,11 @@ create table prescricao_medicamento(
 	fk_id_prescricao int,
 	fk_id_medicamento int,
 	foreign key(fk_id_prescricao) references prescricao(id_prescricao)
-	on delete cascade
-	on update no action,
+		on update no action
+		on delete cascade,
 	foreign key(fk_id_medicamento) references medicamento(id_medicamento)
-	on delete cascade
-	on update no action
+		on update no action
+		on delete cascade
 );
 
 create table exame( 
@@ -242,9 +247,9 @@ create table exame(
 	descricao_detalhada text,
 	fk_id_atendimento int,
 	foreign key(fk_id_atendimento) references atendimento(id_atendimento)
-	on delete cascade
-	on update no action
-	);
+		on update no action
+		on delete cascade
+);
 
 create table laudo( 
 	id_laudo serial primary key,
@@ -252,8 +257,8 @@ create table laudo(
 	data_resultado date, 
 	fk_id_exame int,
 	foreign key(fk_id_exame) references exame(id_exame)
-	on delete cascade
-	on update no action 
+		on update no action 
+		on delete cascade
 );
  
 create table laboratorio(
@@ -267,11 +272,11 @@ create table exame_laboratorio(
 	fk_id_laboratorio int,
 	fk_id_exame int,
 	foreign key(fk_id_laboratorio) references laboratorio(id_laboratorio)
-	on delete cascade
-	on update no action,
-	foreign key(fk_id_exame) references exame(id_exame)
-	on delete cascade 
-	on update no action	
+		on update no action
+		on delete cascade,
+	foreign key(fk_id_exame) references exame(id_exame) 
+		on update no action
+		on delete cascade
 );
 
 create table fatura(  
@@ -284,11 +289,11 @@ create table fatura(
 	fk_id_plano int,
 	fk_id_atendimento int,
 	foreign key (fk_id_plano) references plano_de_saude(id_plano_de_saude)
-	on delete cascade
-	on update no action,
+		on update no action
+		on delete cascade,
 	foreign key (fk_id_atendimento) references atendimento(id_atendimento)
-	on delete cascade
-	on update no action
+		on update no action
+		on delete cascade
 );
 
 ---------------------------------------------INSERTS DML-----------------------------------------------------------------------
@@ -317,16 +322,7 @@ INSERT INTO medicamento (nome, laboratorio) VALUES
 
 -- LABORATORIO
 INSERT INTO laboratorio (tipo) VALUES 
-('interno'), ('externo'), ('interno'), ('externo'), ('interno'), 
-('externo'), ('interno'), ('externo'), ('interno'), ('externo');
-
--- PESQUISA_SATISFACAO
-INSERT INTO pesquisa_satisfacao (data_resposta, nota_geral, comentario, recomendaria, tempo_espera_avaliacao) VALUES 
-('2024-01-10', 5, 'Excelente atendimento', true, 5), ('2024-01-11', 4, 'Bom, mas pode melhorar', true, 3),
-('2024-01-12', 3, 'Regular', false, 2), ('2024-01-13', 5, 'Muito rápido', true, 5),
-('2024-01-14', 1, 'Péssimo', false, 1), ('2024-01-15', 4, 'Médicos atenciosos', true, 4),
-('2024-01-16', 5, 'Instalações limpas', true, 5), ('2024-01-17', 2, 'Demora excessiva', false, 1),
-('2024-01-18', 4, 'Ok', true, 3), ('2024-01-19', 3, 'Médio', true, 2);
+('interno'), ('externo');
 
 -- MEDICO
 INSERT INTO medico (crm, nome, especialidade, telefone_fixo, telefone_celular) VALUES 
@@ -388,17 +384,25 @@ INSERT INTO leito (status, fk_id_ala) VALUES
 ('livre', 4), ('ocupado', 5), ('em manutencao', 6), ('livre', 7), ('ocupado', 8);
 
 -- ATENDIMENTO
-INSERT INTO atendimento (data_atendimento, tipo, observacoes, status, fk_id_medico, fk_id_paciente, fk_id_pesquisa) VALUES 
-('2024-02-01 10:00:00', 'consulta', 'Dor de cabeça constante', 'realizado', 1, 1, 1),
-('2024-02-01 11:30:00', 'emergencia', 'Fratura exposta', 'realizado', 2, 2, 2),
-('2024-02-02 09:00:00', 'revisao', 'Retorno pós-cirúrgico', 'agendado', 3, 3, 3),
-('2024-02-02 14:00:00', 'consulta', 'Check-up anual', 'realizado', 4, 4, 4),
-('2024-02-03 08:00:00', 'emergencia', 'Crise asmática', 'cancelado', 5, 5, 5),
-('2024-02-03 16:00:00', 'consulta', 'Dores lombares', 'realizado', 6, 6, 6),
-('2024-02-04 10:00:00', 'revisao', 'Avaliação de exames', 'realizado', 7, 7, 7),
-('2024-02-04 15:30:00', 'consulta', 'Gripe forte', 'agendado', 8, 8, 8),
-('2024-02-05 13:00:00', 'emergencia', 'Acidente doméstico', 'realizado', 9, 9, 9),
-('2024-02-05 17:00:00', 'consulta', 'Alergia cutânea', 'realizado', 10, 10, 10);
+INSERT INTO atendimento (data_atendimento, tipo, observacoes, status, fk_id_medico, fk_id_paciente) VALUES 
+('2024-02-01 10:00:00', 'consulta', 'Dor de cabeça constante', 'realizado', 1, 1),
+('2024-02-01 11:30:00', 'emergencia', 'Fratura exposta', 'realizado', 2, 2),
+('2024-02-02 09:00:00', 'revisao', 'Retorno pós-cirúrgico', 'agendado', 3, 3),
+('2024-02-02 14:00:00', 'consulta', 'Check-up anual', 'realizado', 4, 4),
+('2024-02-03 08:00:00', 'emergencia', 'Crise asmática', 'cancelado', 5, 5),
+('2024-02-03 16:00:00', 'consulta', 'Dores lombares', 'realizado', 6, 6),
+('2024-02-04 10:00:00', 'revisao', 'Avaliação de exames', 'realizado', 7, 7),
+('2024-02-04 15:30:00', 'consulta', 'Gripe forte', 'agendado', 8, 8),
+('2024-02-05 13:00:00', 'emergencia', 'Acidente doméstico', 'realizado', 9, 9),
+('2024-02-05 17:00:00', 'consulta', 'Alergia cutânea', 'realizado', 10, 10);
+
+-- PESQUISA_SATISFACAO
+INSERT INTO pesquisa_satisfacao (data_resposta, fk_id_atendimento, nota_geral, comentario, recomendaria, tempo_espera_avaliacao) VALUES 
+('2024-01-10',1, 5, 'Excelente atendimento', true, 5), ('2024-01-11',2, 4, 'Bom, mas pode melhorar', true, 3),
+('2024-01-12',3, 3, 'Regular', false, 2), ('2024-01-13',4, 5, 'Muito rápido', true, 5),
+('2024-01-14',5, 1, 'Péssimo', false, 1), ('2024-01-15',6, 4, 'Médicos atenciosos', true, 4),
+('2024-01-16',7, 5, 'Instalações limpas', true, 5), ('2024-01-17',8, 2, 'Demora excessiva', false, 1),
+('2024-01-18',9, 4, 'Ok', true, 3), ('2024-01-19',10, 3, 'Médio', true, 2);
 
 -- INTERNACAO
 INSERT INTO internacao (data_entrada, data_saida, status, fk_id_paciente, fk_id_leito) VALUES 
@@ -406,7 +410,7 @@ INSERT INTO internacao (data_entrada, data_saida, status, fk_id_paciente, fk_id_
 ('2024-02-01', '2024-02-10', true, 3, 5), ('2024-02-05', '2024-02-12', true, 4, 7),
 ('2024-02-10', NULL, true, 5, 10), ('2024-02-15', NULL, true, 6, 2),
 ('2024-02-20', '2024-02-25', false, 7, 3), ('2024-03-01', '2024-03-05', false, 8, 8),
-('2024-03-10', NULL, true, 9, 5), ('2024-03-15', NULL, true, 10, 10);
+('2024-03-10', NULL, true, 9, 9), ('2024-03-15', NULL, true, 10, 4);
 
 -- PRESCRICAO
 INSERT INTO prescricao (data_prescricao, fk_id_atendimento) VALUES 
@@ -451,12 +455,103 @@ INSERT INTO exame_laboratorio (custo, fk_id_laboratorio, fk_id_exame) VALUES
 (50.00, 1, 1), (30.00, 2, 2), (150.00, 1, 3), (40.00, 2, 4), (60.00, 1, 5),
 (500.00, 2, 6), (70.00, 1, 7), (45.00, 2, 8), (300.00, 1, 9), (80.00, 2, 10);
 
+--DADOS PARA A QUESTÃO 03
+INSERT INTO atendimento (data_atendimento, tipo, observacoes, status, fk_id_medico, fk_id_paciente) VALUES 
+('2026-03-01 08:00:00', 'consulta', 'Rotina Março', 'realizado', 1, 9),
+('2026-03-05 09:30:00', 'emergencia', 'Sintomas gripais', 'realizado', 2, 8),
+('2026-03-10 10:00:00', 'consulta', 'Avaliação trimestral', 'realizado', 1, 7),
+('2026-03-12 14:00:00', 'consulta', 'Dor articular', 'realizado', 3, 4),
+('2026-03-15 11:00:00', 'revisao', 'Retorno de rotina', 'realizado', 1, 5),
+('2026-03-18 15:00:00', 'consulta', 'Check-up', 'realizado', 5, 6),
+('2026-03-20 08:30:00', 'emergencia', 'Crise alérgica', 'realizado', 7, 3),
+('2026-03-22 10:45:00', 'consulta', 'Acompanhamento', 'realizado', 8, 2),
+('2026-03-24 13:00:00', 'revisao', 'Pós-exame', 'realizado', 9, 1),
+('2026-03-25 16:20:00', 'consulta', 'Queixa de cansaço', 'realizado', 10, 10);
+
+INSERT INTO exame (tipo, data_solicitacao, descricao_detalhada, fk_id_atendimento) VALUES 
+('sangue', '2026-02-02', 'Hemograma solicitado para rotina', 11),
+('urina', '2026-02-06', 'Sumário de urina - suspeita de infecção', 12),
+('imagem', '2026-02-11', 'Ultrassom abdominal total', 13),
+('sangue', '2026-02-13', 'Dosagem de Vitamina D e Cálcio', 14),
+('fezes', '2026-02-16', 'Pesquisa de sangue oculto', 15),
+('imagem', '2026-03-19', 'Raio-X de coluna lombo-sacra', 16),
+('sangue', '2026-03-21', 'IgE específico para alérgenos', 17),
+('urina', '2026-03-23', 'Urocultura com antibiograma', 18),
+('imagem', '2026-03-24', 'Ecocardiograma transtorácico', 19),
+('sangue', '2026-03-26', 'Perfil lipídico e glicemia', 20);
+
+-- Inserindo laudos com resultado NULL para os exames de Março/2026
+INSERT INTO laudo (resultado, data_resultado, fk_id_exame) VALUES 
+('normal', NULL, 21),
+('normal', NULL, 22),
+('alterado', NULL, 23),
+('normal', NULL, 24),
+('critico', NULL, 25),
+('normal', NULL, 26),
+('alterado', NULL, 27),
+('normal', NULL, 28),
+('critico', NULL, 29),
+('normal', NULL, 30);
+
+delete from laudo where data_resultado isnull;
+
 ---------------------------------------------CONSULTAS DQL-----------------------------------------------------------------------
 
+--Médicos e Especialidades
+select m.nome as medico, m.especialidade, m.telefone_fixo, m.telefone_celular 
+from medico m
+where m.especialidade = 'cardiologista';
+
+--Pacientes e Planos de Saúde
+select p.nome, p.cpf, pds.nome as plano
+from paciente p
+inner join plano_de_saude pds 
+on p.fk_id_plano  = pds.id_plano_de_saude 
+where pds.nome = 'Unimed';
+
+--Exames Pendentes
+select e.id_exame, e.tipo, e.data_solicitacao, e.descricao_detalhada, l.data_resultado 
+from exame e
+inner join laudo l
+on e.id_exame = l.fk_id_exame 
+where l.data_resultado isnull and e.data_solicitacao between '2026-03-01' and '2026-03-31';
+
+--Quantidade de exames por laboratório
+select l.tipo as tipo_laboratorio, count(el.fk_id_laboratorio) as qtd_exames
+from exame_laboratorio el
+inner join laboratorio l
+on el.fk_id_laboratorio = l.id_laboratorio
+group by l.tipo;
+
+--Internações ativas
+select p.nome as paciente, l.id_leito as numero_leito, i.data_entrada as data_internacao
+from paciente p
+inner join internacao i
+on p.id_paciente  = i.fk_id_paciente 
+inner join leito l
+on i.fk_id_leito  = l.id_leito
+where i.data_saida is null;
+
+--Atendimentos por médico
+select m.nome as medico, count(a.fk_id_medico) as atendimento
+from medico m
+inner join atendimento a
+on m.id_medico  = a.fk_id_medico 
+where a.data_atendimento between '2026-03-01' and '2026-03-31'
+group by m.nome;
+
+--Médico com maior número de atendimentos
 
 
 
-
+-------------------------------------------------ERROS NO BANCO DE DADOS PARA CORRIGIR------------------------------------------
+/* 1- problema no insert mostrando 2 pacientes no mesmo leito
+	resolver na modelagem 
+	
+   2- a pesquisa de satisfacao esta sendo criada antes do atendimento o que também é um erro
+	
+	
+*/
 
 
 
