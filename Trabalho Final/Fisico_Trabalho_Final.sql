@@ -491,6 +491,21 @@ INSERT INTO laudo (resultado, data_resultado, fk_id_exame) VALUES
 ('critico', NULL, 9),
 ('normal', NULL, 10);
 
+
+INSERT INTO fatura (valor_fatura, status, forma_pagamento, data_emissao, data_vencimento, fk_id_plano, fk_id_atendimento) VALUES 
+(150.00, 'pago', 'pix', '2026-02-01', '2026-02-10', 1, 1),
+(1250.00, 'pago', 'cartao', '2026-02-01', '2026-02-15', 2, 2),
+(200.00, 'em analise', 'pix', '2026-02-02', '2026-02-20', 3, 4),
+(150.00, 'pago', 'cartao', '2026-02-03', '2026-02-13', 4, 6),
+(100.00, 'pago', 'cartao', '2026-02-04', '2026-02-14', 5, 1);
+
+INSERT INTO fatura (valor_fatura, status, forma_pagamento, data_emissao, data_vencimento, fk_id_plano, fk_id_atendimento) VALUES 
+(150.00, 'pago', 'dinheiro', '2026-02-01', '2026-02-10', 1, 1),
+(1250.00, 'pago', 'cartao', '2026-02-01', '2026-02-15', 2, 2),
+(200.00, 'em analise', 'pix', '2026-02-02', '2026-02-20', 3, 4),
+(350.00, 'pago', 'cartao', '2026-02-03', '2026-02-13', 4, 6),
+(200.00, 'pago', 'cartao', '2026-02-04', '2026-02-14', 1, 1);
+
 ---------------------------------------------CONSULTAS DQL-----------------------------------------------------------------------
 
 --Médicos e Especialidades
@@ -549,11 +564,24 @@ limit 1;
 --Ocupação de leitos por ala
 select * from leito;
 select * from ala;
+
+/*Faturamento por Plano de Saúde
+Qual o valor total faturado para cada plano de saúde no ano de 2026? Apresente o nome
+do plano e o valor total.*/
+
+select pl.nome, sum (f.valor_fatura) as total
+from plano_de_saude pl
+inner join fatura f
+on f.fk_id_plano = pl.id_plano_de_saude 
+where f.status = 'pago' and f.data_emissao between '2026-01-01' and '2026-12-31'
+group by pl.nome
+
+--
 -------------------------------------------------ERROS NO BANCO DE DADOS PARA CORRIGIR------------------------------------------
 
 
 
-select
+select p.nome from plano_de_saude p;
 
 
 
