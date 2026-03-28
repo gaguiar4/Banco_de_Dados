@@ -355,9 +355,7 @@ INSERT INTO plano_de_saude (nome, cobertura, telefone_fixo, telefone_celular) VA
 
 -- ALA
 INSERT INTO ala (tipo, leitos_disponiveis, fk_id_hospital, fk_id_enfermeira) VALUES 
-('uti', 5, 1, 1), ('enfermaria', 10, 1, 2), ('pediatria', 8, 2, 3),
-('uti', 3, 3, 4), ('enfermaria', 12, 4, 5), ('pediatria', 6, 5, 6),
-('uti', 4, 6, 7), ('enfermaria', 15, 7, 8), ('pediatria', 10, 8, 9), ('uti', 2, 9, 10);
+('uti', 5, 1, 1), ('enfermaria', 10, 1, 2), ('pediatria', 8, 2, 3);
 
 -- CREDENCIAMENTO
 INSERT INTO credenciamento (data, fk_id_hospital, fk_id_plano_de_saude) VALUES 
@@ -381,7 +379,7 @@ INSERT INTO paciente (nome, cpf, fk_endereco, telefone_fixo, telefone_celular, d
 -- LEITO
 INSERT INTO leito (status, fk_id_ala) VALUES 
 ('livre', 1), ('ocupado', 1), ('em manutencao', 2), ('livre', 2), ('ocupado', 3),
-('livre', 4), ('ocupado', 5), ('em manutencao', 6), ('livre', 7), ('ocupado', 8);
+('livre', 3), ('ocupado', 1), ('em manutencao', 2), ('livre', 2), ('ocupado', 3);
 
 -- ATENDIMENTO
 INSERT INTO atendimento (data_atendimento, tipo, observacoes, status, fk_id_medico, fk_id_paciente) VALUES 
@@ -482,18 +480,16 @@ INSERT INTO exame (tipo, data_solicitacao, descricao_detalhada, fk_id_atendiment
 
 -- Inserindo laudos com resultado NULL para os exames de Março/2026
 INSERT INTO laudo (resultado, data_resultado, fk_id_exame) VALUES 
-('normal', NULL, 21),
-('normal', NULL, 22),
-('alterado', NULL, 23),
-('normal', NULL, 24),
-('critico', NULL, 25),
-('normal', NULL, 26),
-('alterado', NULL, 27),
-('normal', NULL, 28),
-('critico', NULL, 29),
-('normal', NULL, 30);
-
-delete from laudo where data_resultado isnull;
+('normal', NULL, 1),
+('normal', NULL, 2),
+('alterado', NULL, 3),
+('normal', NULL, 4),
+('critico', NULL, 5),
+('normal', NULL, 6),
+('alterado', NULL, 7),
+('normal', NULL, 8),
+('critico', NULL, 9),
+('normal', NULL, 10);
 
 ---------------------------------------------CONSULTAS DQL-----------------------------------------------------------------------
 
@@ -541,21 +537,23 @@ where a.data_atendimento between '2026-03-01' and '2026-03-31'
 group by m.nome;
 
 --Médico com maior número de atendimentos
+select m.nome as medico, count(a.fk_id_medico) as atendimento
+from medico m
+inner join atendimento a
+on m.id_medico  = a.fk_id_medico 
+where a.data_atendimento between '2026-03-01' and '2026-03-31'
+group by m.nome 
+order by atendimento desc
+limit 1;
 
-
-
+--Ocupação de leitos por ala
+select * from leito;
+select * from ala;
 -------------------------------------------------ERROS NO BANCO DE DADOS PARA CORRIGIR------------------------------------------
-/* 1- problema no insert mostrando 2 pacientes no mesmo leito
-	resolver na modelagem 
-	
-   2- a pesquisa de satisfacao esta sendo criada antes do atendimento o que também é um erro
-	
-	
-*/
 
 
 
-
+select
 
 
 
