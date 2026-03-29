@@ -508,33 +508,34 @@ INSERT INTO fatura (valor_fatura, status, forma_pagamento, data_emissao, data_ve
 
 ---------------------------------------------CONSULTAS DQL-----------------------------------------------------------------------
 
---Médicos e Especialidades
+-- 1# Médicos e Especialidades
 select m.nome as medico, m.especialidade, m.telefone_fixo, m.telefone_celular 
 from medico m
 where m.especialidade = 'cardiologista';
 
---Pacientes e Planos de Saúde
+-- 2# Pacientes e Planos de Saúde
 select p.nome, p.cpf, pds.nome as plano
 from paciente p
 inner join plano_de_saude pds 
 on p.fk_id_plano  = pds.id_plano_de_saude 
 where pds.nome = 'Unimed';
 
---Exames Pendentes
+-- 3# Exames Pendentes
 select e.id_exame, e.tipo, e.data_solicitacao, e.descricao_detalhada, l.data_resultado 
 from exame e
 inner join laudo l
 on e.id_exame = l.fk_id_exame 
-where l.data_resultado isnull and e.data_solicitacao between '2026-03-01' and '2026-03-31';
+where  l.data_resultado isnull and e.data_solicitacao between '2026-03-01' and '2026-03-31';
 
---Quantidade de exames por laboratório
+
+-- 4# Quantidade de exames por laboratório
 select l.tipo as tipo_laboratorio, count(el.fk_id_laboratorio) as qtd_exames
 from exame_laboratorio el
 inner join laboratorio l
 on el.fk_id_laboratorio = l.id_laboratorio
 group by l.tipo;
 
---Internações ativas
+-- 5# Internações ativas
 select p.nome as paciente, l.id_leito as numero_leito, i.data_entrada as data_internacao
 from paciente p
 inner join internacao i
@@ -543,7 +544,7 @@ inner join leito l
 on i.fk_id_leito  = l.id_leito
 where i.data_saida is null;
 
---Atendimentos por médico
+-- 6# Atendimentos por médico
 select m.nome as medico, count(a.fk_id_medico) as atendimento
 from medico m
 inner join atendimento a
@@ -551,7 +552,7 @@ on m.id_medico  = a.fk_id_medico
 where a.data_atendimento between '2026-03-01' and '2026-03-31'
 group by m.nome;
 
---Médico com maior número de atendimentos
+-- 7# Médico com maior número de atendimentos
 select m.nome as medico, count(a.fk_id_medico) as atendimento
 from medico m
 inner join atendimento a
@@ -561,13 +562,16 @@ group by m.nome
 order by atendimento desc
 limit 1;
 
---Ocupação de leitos por ala
-select * from leito;
-select * from ala;
+-- 8# Ocupação de Leitos por Ala
 
-/*Faturamento por Plano de Saúde
-Qual o valor total faturado para cada plano de saúde no ano de 2026? Apresente o nome
-do plano e o valor total.*/
+select ala.tipo as ala, ala.leitos_disponiveis, count(leito.fk_id_ala) as leitos_ocupados, round((count(leito.fk_id_ala) ::numeric/ ala.leitos_disponiveis*100), 2) as percentual_ocupacao
+from leito
+join ala
+on leito.fk_id_ala  = ala.id_ala
+where leito.status = 'ocupado'
+group by ala.tipo, ala.leitos_disponiveis;
+
+-- 9# Faturamento por Plano de Saúde
 
 select pl.nome, sum (f.valor_fatura) as total
 from plano_de_saude pl
@@ -576,16 +580,46 @@ on f.fk_id_plano = pl.id_plano_de_saude
 where f.status = 'pago' and f.data_emissao between '2026-01-01' and '2026-12-31'
 group by pl.nome
 
---
--------------------------------------------------ERROS NO BANCO DE DADOS PARA CORRIGIR------------------------------------------
+-- 10# Prescrições de Medicamentos
 
+select m.nome, count(pm.fk_id_medicamento) as Quantidade_Prescricoes from prescricao_medicamento pm 
+inner join medicamento m
+ on m.id_medicamento = pm.fk_id_medicamento
+    group by(m.nome)
+        order by Quantidade_Prescricoes desc
+limit 2;
 
+-- 11# Médicos e pacientes por especialidade
 
-select p.nome from plano_de_saude p;
+select m.nome as medico, m.especialidade,
+    count (a.fk_id_paciente) as quantidades_pacientes
+from medico m
+inner join atendimento a
+    on a.fk_id_medico  = m.id_medico
+group by m.nome, m.especialidade;
 
+-- 12# Leitos com Internações Prolongadas --
 
+select l.id_leito as numero_leito, p.nome, i.data_entrada from internacao i
+inner join paciente p
+    on i.fk_id_paciente  = p.id_paciente
+ inner join leito l
+   on i.fk_id_leito = l.id_leito
+where current_date - i.data_entrada > 15 and i.status = true;
 
+-- 13# faturamento por Tipo de Atendimento
+select a.tipo, sum(f.valor_fatura) as Valor_Total_Faturado from fatura f
+inner join atendimento a
+    on f.fk_id_atendimento = a.id_atendimento
+where f.status = 'pago'
+group by(a.tipo);
 
+-- 14# faturamento plano de saude
 
-
-
+select pl.nome , sum (f.valor_fatura) as total_faturado
+from fatura f
+inner join plano_de_saude pl 
+    on f.fk_id_plano = pl.id_plano_de_saude 
+where pl.nome = 'Hapvida'
+and f.status = 'pago'
+group by pl.nome;
