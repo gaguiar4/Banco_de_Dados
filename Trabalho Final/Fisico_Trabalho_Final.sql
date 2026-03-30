@@ -130,12 +130,13 @@ foreign key(fk_id_plano_de_saude) references plano_de_saude(id_plano_de_saude)
 
 create table endereco(
 	id_endereco serial primary key,
-	cep int unique not null,
+	cep char(8) unique not null,
 	rua varchar(100) not null,
 	bairro varchar(100) not null,
 	cidade varchar(100) not null,
 	estado varchar(100) not null
 );
+
 
 create table paciente(
 	id_paciente serial primary key,
@@ -152,6 +153,7 @@ create table paciente(
 	foreign key(fk_id_plano) references plano_de_saude(id_plano_de_saude)
 		on update no action on delete cascade
 );
+
 
 create table internacao(
 		id_internacao serial primary key,
@@ -254,7 +256,9 @@ create table exame(
 create table laudo( 
 	id_laudo serial primary key,
 	resultado resultado_exame, 
-	data_resultado date, 
+	data_resultado date,
+	nome_arquivo varchar(100),
+	arquivo_laudo bytea,
 	fk_id_exame int,
 	foreign key(fk_id_exame) references exame(id_exame)
 		on update no action 
@@ -295,7 +299,6 @@ create table fatura(
 		on update no action
 		on delete cascade
 );
-
 ---------------------------------------------INSERTS DML-----------------------------------------------------------------------
 
 -- HOSPITAL
@@ -308,11 +311,11 @@ INSERT INTO hospital (nome, cnpj) VALUES
 
 -- ENDERECO
 INSERT INTO endereco (cep, rua, bairro, cidade, estado) VALUES 
-(01001000, 'Praça da Sé', 'Sé', 'São Paulo', 'SP'), (20010000, 'Rua Primeiro de Março', 'Centro', 'Rio de Janeiro', 'RJ'),
-(30110001, 'Avenida do Contorno', 'Centro', 'Belo Horizonte', 'MG'), (70040000, 'Esplanada dos Ministérios', 'Zona Cívico-Administrativa', 'Brasília', 'DF'),
-(40010000, 'Rua da Bélgica', 'Comércio', 'Salvador', 'BA'), (60010000, 'Rua Castro e Silva', 'Centro', 'Fortaleza', 'CE'),
-(80010000, 'Rua XV de Novembro', 'Centro', 'Curitiba', 'PR'), (90010000, 'Avenida Mauá', 'Centro', 'Porto Alegre', 'RS'),
-(50010000, 'Avenida Cais do Apolo', 'Recife', 'Recife', 'PE'), (69005000, 'Rua Guilherme Moreira', 'Centro', 'Manaus', 'AM');
+('01001000', 'Praça da Sé', 'Sé', 'São Paulo', 'SP'), ('20010000', 'Rua Primeiro de Março', 'Centro', 'Rio de Janeiro', 'RJ'),
+('30110001', 'Avenida do Contorno', 'Centro', 'Belo Horizonte', 'MG'), ('70040000', 'Esplanada dos Ministérios', 'Zona Cívico-Administrativa', 'Brasília', 'DF'),
+('40010000', 'Rua da Bélgica', 'Comércio', 'Salvador', 'BA'), ('60010000', 'Rua Castro e Silva', 'Centro', 'Fortaleza', 'CE'),
+('80010000', 'Rua XV de Novembro', 'Centro', 'Curitiba', 'PR'), ('90010000', 'Avenida Mauá', 'Centro', 'Porto Alegre', 'RS'),
+('50010000', 'Avenida Cais do Apolo', 'Recife', 'Recife', 'PE'), ('69005000', 'Rua Guilherme Moreira', 'Centro', 'Manaus', 'AM');
 
 -- MEDICAMENTO
 INSERT INTO medicamento (nome, laboratorio) VALUES 
@@ -443,10 +446,48 @@ INSERT INTO prescricao_medicamento (dosagem, quantidade, fk_id_prescricao, fk_id
 (400.0, 1, 6, 6), (50.0, 1, 7, 7), (850.0, 2, 8, 8), (2.0, 1, 9, 9), (10.0, 30, 10, 10);
 
 -- LAUDO
-INSERT INTO laudo (resultado, data_resultado, fk_id_exame) VALUES 
-('normal', '2024-02-02', 1), ('alterado', '2024-02-02', 2), ('normal', '2024-02-03', 3),
-('critico', '2024-02-04', 4), ('normal', '2024-02-05', 5), ('alterado', '2024-02-06', 6),
-('normal', '2024-02-06', 7), ('normal', '2024-02-07', 8), ('alterado', '2024-02-07', 9), ('normal', '2024-02-08', 10);
+INSERT INTO laudo (resultado, data_resultado, nome_arquivo, arquivo_laudo, fk_id_exame) VALUES 
+('normal',   '2024-02-02', 'laudo_01.pdf', '\x255044462d312e350a25d0d4c5d80a312030206f626a0a3c3c2f54797065
+2f436174616c6f672f50616765732032203020520a3e3e0a656e646f626a0a
+322030206f626a0a3c3c2f547970652f50616765732f436f756e7420332f4b
+696473205b33203020522034203020522035203020525d0a3e3e0a656e646f
+626a0a', 1),
+('alterado', '2024-02-02', 'laudo_02.jpg', '\xffd8ffe000104a46494600010101006000600000ffe10c58457869660000
+49492a00080000000a00000001000000010000000100000000000000ffe20c
+4c4943435f50524f46494c4500010100000c3c6c636d7302100000', 2),
+('normal',   '2024-02-03', 'laudo_03.pdf', '\x255044462d312e350a25d0d4c5d80a312030206f626a0a3c3c2f54797065
+2f436174616c6f672f50616765732032203020520a3e3e0a656e646f626a0a
+322030206f626a0a3c3c2f547970652f50616765732f436f756e7420332f4b
+696473205b33203020522034203020522035203020525d0a3e3e0a656e646f
+626a0a', 3),
+('critico',  '2024-02-04', 'laudo_04.pdf', '\x255044462d312e350a25d0d4c5d80a312030206f626a0a3c3c2f54797065
+2f436174616c6f672f50616765732032203020520a3e3e0a656e646f626a0a
+322030206f626a0a3c3c2f547970652f50616765732f436f756e7420332f4b
+696473205b33203020522034203020522035203020525d0a3e3e0a656e646f
+626a0a', 4),
+('normal',   '2024-02-05', 'laudo_05.jpg', '\xffd8ffe000104a46494600010101006000600000ffe10c58457869660000
+49492a00080000000a00000001000000010000000100000000000000ffe20c
+4c4943435f50524f46494c4500010100000c3c6c636d7302100000', 5),
+('alterado', '2024-02-06', 'laudo_06.jpg', '\xffd8ffe000104a46494600010101006000600000ffe10c58457869660000
+49492a00080000000a00000001000000010000000100000000000000ffe20c
+4c4943435f50524f46494c4500010100000c3c6c636d7302100000', 6),
+('normal',   '2024-02-06', 'laudo_07.pdf', '\x255044462d312e350a25d0d4c5d80a312030206f626a0a3c3c2f54797065
+2f436174616c6f672f50616765732032203020520a3e3e0a656e646f626a0a
+322030206f626a0a3c3c2f547970652f50616765732f436f756e7420332f4b
+696473205b33203020522034203020522035203020525d0a3e3e0a656e646f
+626a0a', 7),
+('normal',   '2024-02-07', 'laudo_08.jpg', '\xffd8ffe000104a46494600010101006000600000ffe10c58457869660000
+49492a00080000000a00000001000000010000000100000000000000ffe20c
+4c4943435f50524f46494c4500010100000c3c6c636d7302100000', 8),
+('alterado', '2024-02-07', 'laudo_09.jpg', '\xffd8ffe000104a46494600010101006000600000ffe10c58457869660000
+49492a00080000000a00000001000000010000000100000000000000ffe20c
+4c4943435f50524f46494c4500010100000c3c6c636d7302100000', 9),
+('normal',   '2024-02-08', 'laudo_10.pdf', '\x255044462d312e350a25d0d4c5d80a312030206f626a0a3c3c2f54797065
+2f436174616c6f672f50616765732032203020520a3e3e0a656e646f626a0a
+322030206f626a0a3c3c2f547970652f50616765732f436f756e7420332f4b
+696473205b33203020522034203020522035203020525d0a3e3e0a656e646f
+626a0a', 10);
+
 
 -- EXAME_LABORATORIO
 INSERT INTO exame_laboratorio (custo, fk_id_laboratorio, fk_id_exame) VALUES 
@@ -480,16 +521,16 @@ INSERT INTO exame (tipo, data_solicitacao, descricao_detalhada, fk_id_atendiment
 
 -- Inserindo laudos com resultado NULL para os exames de Março/2026
 INSERT INTO laudo (resultado, data_resultado, fk_id_exame) VALUES 
-('normal', NULL, 1),
-('normal', NULL, 2),
-('alterado', NULL, 3),
-('normal', NULL, 4),
-('critico', NULL, 5),
-('normal', NULL, 6),
-('alterado', NULL, 7),
-('normal', NULL, 8),
-('critico', NULL, 9),
-('normal', NULL, 10);
+('normal', NULL, 11),
+('normal', NULL, 12),
+('alterado', NULL, 13),
+('normal', NULL, 14),
+('critico', NULL, 15),
+('normal', NULL, 16),
+('alterado', NULL, 17),
+('normal', NULL, 18),
+('critico', NULL, 19),
+('normal', NULL, 20);
 
 
 INSERT INTO fatura (valor_fatura, status, forma_pagamento, data_emissao, data_vencimento, fk_id_plano, fk_id_atendimento) VALUES 
@@ -525,8 +566,7 @@ select e.id_exame, e.tipo, e.data_solicitacao, e.descricao_detalhada, l.data_res
 from exame e
 inner join laudo l
 on e.id_exame = l.fk_id_exame 
-where  l.data_resultado isnull and e.data_solicitacao between '2026-03-01' and '2026-03-31';
-
+where l.data_resultado isnull and e.data_solicitacao between '2026-03-01' and '2026-03-31';
 
 -- 4# Quantidade de exames por laboratório
 select l.tipo as tipo_laboratorio, count(el.fk_id_laboratorio) as qtd_exames
@@ -578,7 +618,7 @@ from plano_de_saude pl
 inner join fatura f
 on f.fk_id_plano = pl.id_plano_de_saude 
 where f.status = 'pago' and f.data_emissao between '2026-01-01' and '2026-12-31'
-group by pl.nome
+group by pl.nome;
 
 -- 10# Prescrições de Medicamentos
 
@@ -623,3 +663,15 @@ inner join plano_de_saude pl
 where pl.nome = 'Hapvida'
 and f.status = 'pago'
 group by pl.nome;
+
+
+-- Comando SQL para update -- 
+
+update enfermeira
+set nome = 'Roberta'
+where id_enfermeira = 1;
+
+-- Comando SQL para remoção --
+
+delete from laudo
+where id_laudo = 1;
