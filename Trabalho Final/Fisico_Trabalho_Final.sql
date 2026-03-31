@@ -83,7 +83,7 @@ cnpj char(14) unique
 create table enfermeira (
 id_enfermeira serial primary key,
 nome varchar(50),
-cre char(9),
+cre char(9) unique,
 turno turno_enfermeira,
 id_enfermeira_chefe int,
 foreign key(id_enfermeira_chefe) references enfermeira(id_enfermeira)
@@ -142,7 +142,7 @@ create table paciente(
 	id_paciente serial primary key,
 	nome varchar(60),
 	cpf char(11) unique,
-	fk_endereco int default null,
+	fk_endereco int not null,
 	telefone_fixo char(11),
 	telefone_celular char (11),
 	data_nascimento date,
@@ -171,6 +171,7 @@ create table internacao(
 );
 
 --Index unico parcial guarda o id leito temporariamente enquanto ele estiver ocupado
+
 create unique index idx_leito_unico_ocupado
 on internacao (fk_id_leito)
 where (status = true);
